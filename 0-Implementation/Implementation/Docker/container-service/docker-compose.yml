@@ -1,0 +1,17 @@
+version: '3.4'
+services:
+    tf-container-service:
+        tty: true
+        build: .
+        container_name: tf-container-service
+        hostname: containerService
+        network_mode: host
+        privileged: true
+        ports:
+            - ${serverport}:${serverport}
+        volumes:
+            - ../../thesis-backend/tf-container-service/target/tf-container-service.jar:/usr/app/service.jar
+            - /var/run/docker.sock:/var/run/docker.sock #Mount host docker socket to this container's socket.
+        working_dir: /etc/tf_setup
+        command: bash -c "/etc/tf_setup/mount-samba.sh ${mainmaster}/sambashare ${smbuser} ${smbpassword} /media/samba &&
+          java -jar  /usr/app/service.jar --server.port=${serverport}"

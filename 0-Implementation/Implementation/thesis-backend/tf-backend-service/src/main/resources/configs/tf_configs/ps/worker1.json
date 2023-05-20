@@ -1,0 +1,12 @@
+{
+    "cluster": {
+        "chief": ["chief:8888"],
+        "worker": ["worker0:8888","worker1:8888"],
+        "ps": ["ps0:8888"],
+        "evaluator":["evaluator:8888"]
+    }, 
+    "task": {
+        "type": "worker",
+        "index": 1
+    }
+}

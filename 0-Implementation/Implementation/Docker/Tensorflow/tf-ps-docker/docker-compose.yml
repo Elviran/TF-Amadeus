@@ -1,0 +1,28 @@
+version: '3.4'
+services:
+  tfcontainer:
+    build: .
+    tty: true
+    container_name: ${container_name}
+    hostname: tfcontainer
+    network_mode: host
+    cap_add:
+      - SYS_ADMIN
+      - DAC_READ_SEARCH
+    ports:
+      - 8888:8888
+    privileged: true
+    volumes:
+      - /var/log/tensorflow/:/workspace/logs/
+    extra_hosts:
+      - chief:${chief}
+      - evaluator:${evaluator}
+      - master:${master}
+      - ps0:${ps0}
+      - worker0:${worker0}
+      - worker1:${worker1}
+    working_dir: /workspace
+    command: >
+       bash -c "./run-services.sh master/sambashare sambaserver test123 /media/samba  
+       /media/samba/${tf_config} ${model_dir} ${model_fn}"
+

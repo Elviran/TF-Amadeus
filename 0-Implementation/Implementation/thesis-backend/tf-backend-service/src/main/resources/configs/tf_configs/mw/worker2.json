@@ -1,0 +1,9 @@
+{
+    "cluster": {
+        "worker": ["worker0:2222","worker1:2222", "worker3:2222", "worker4:2222"]
+    }, 
+    "task": {
+        "type": "worker",
+        "index": 1
+    }
+}

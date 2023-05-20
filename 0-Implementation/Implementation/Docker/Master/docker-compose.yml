@@ -1,0 +1,32 @@
+version: '3.4'
+services:
+    tf-cluster-service:
+        tty: true
+        image: java:8-jdk-alpine
+        container_name: tf-cluster-service
+        hostname: clusterService
+        network_mode: host
+        volumes:
+            - ../../thesis-backend/tf-cluster-service/target/tf-cluster-service.jar:/usr/app/tf-cluster-service.jar
+        working_dir: /usr/app/
+        ports:
+            - ${clustserverport}:${clustserverport}
+            - 5005:5005
+        command: java -jar -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005 tf-cluster-service.jar --destination.name=${name} --cluster.urls=${urls} --server.port=${clustserverport} --smb.url=${smburl}
+    tf-container-service:
+        tty: true
+        build: ./images/tf-container-service/.
+        container_name: tf-container-service
+        hostname: containerService
+        network_mode: host
+        privileged: true
+        ports:
+            - ${contserverport}:${contserverport}
+            - 5006:5006
+        volumes:
+            - ../../thesis-backend/tf-container-service/target/tf-container-service.jar:/usr/app/service.jar
+            - /var/run/docker.sock:/var/run/docker.sock #Mount host docker socket to this container's socket.
+        working_dir: /etc/tf_setup
+        command: bash -c "/etc/tf_setup/mount-samba.sh ${mainmaster}/sambashare ${smbuser} ${smbpassword} /media/samba &&
+            java -jar -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5006 /usr/app/service.jar
+            --server.port=${contserverport}"

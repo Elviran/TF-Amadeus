@@ -1,0 +1,51 @@
+version: '3.4'
+
+volumes:
+    shared_drive:
+        external: true
+    
+services:
+    samba:
+        tty: true
+        build: ./images/sambaserver-docker/.
+        image: elviran/thesis:mainmaster-latest
+        container_name: samba
+        hostname: samba
+        network_mode: host
+        volumes:
+            - shared_drive:/shared/sambashare 
+            - ../Tensorflow:/shared/sambashare/docker
+    TF-Amadeus-backend:
+        tty: true
+        image: openjdk:11
+        container_name: TF-Amadeus-backend
+        hostname: tfamadeus
+        network_mode: host
+        volumes:
+            - shared_drive:/media/samba/
+            - ../../thesis-backend/tf-backend-service/target/tf-amadeus-backend.jar:/usr/app/backend.jar
+            - ../../thesis-backend/tf-backend-service/src/main/resources:/usr/app/resources/
+        working_dir: /usr/app/
+        ports:
+            - ${serverport}:${serverport}
+            - 5005:5005
+        command: java -jar -Xdebug -Xrunjdwp:transport=dt_socket,address=5005,server=y,suspend=n backend.jar --server.port=${serverport} --cluster.urls=${urls}
+        depends_on:
+            - samba
+    tf-container-service:
+        tty: true
+        build: ../container-service/.
+        container_name: tf-amadeus-container-service
+        hostname: containerService
+        privileged: true
+        ports:
+            - ${contserverport}:${contserverport}
+        volumes:
+            - ../../thesis-backend/tf-container-service/target/tf-container-service.jar:/usr/app/service.jar
+            - shared_drive:/media/samba
+            - /var/run/docker.sock:/var/run/docker.sock #Mount host docker socket to this container's socket.
+        working_dir: /etc/tf_setup
+        command: java -jar /usr/app/service.jar --server.port=${contserverport}
+    #frontend:
+#TODO:// Create container to execute tensorboard on it
+#TODO:// Create container where to host website

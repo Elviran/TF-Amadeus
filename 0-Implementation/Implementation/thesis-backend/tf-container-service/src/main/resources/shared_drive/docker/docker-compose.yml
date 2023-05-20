@@ -1,0 +1,25 @@
+version: '3.4'
+services:
+  tfcontainer:
+    build: .
+    tty: true
+    container_name: tfcontainer
+    hostname: tfcontainer
+    cap_add:
+      - SYS_ADMIN
+      - DAC_READ_SEARCH
+    ports:
+      - 2222:2222
+    privileged: true
+    extra_hosts:
+      - chief:${chief}
+      - evaluator:${evaluator}
+      - master:${master}
+      - ps0:${ps0}
+      - worker0:${worker0}
+      - worker1:${worker1}
+    working_dir: /workspace
+    command: tail -f /dev/null
+#       bash -c "./run-services.sh localhost/sambashare sambaserver test123 /media/samba
+#       /media/samba/${tf_config} /media/samba/${model_dir} ${model_fn}"
+
